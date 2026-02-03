@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash",
+      "Read(*)",
+      "Write(*)",
+      "Edit(*)",
+      "WebSearch"
+    ],
+    "deny": [
+      "Bash(git push * main*)",
+      "Bash(git push * master*)",
+      "Bash(git merge*)",
+      "Bash(gh pr merge*)"
+    ]
+  }
+}
