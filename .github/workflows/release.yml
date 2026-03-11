@@ -39,7 +39,7 @@ jobs:
       - name: Notify infra repo
         uses: peter-evans/repository-dispatch@v3
         with:
-          token: ${{ secrets.DEPLOY_PAT }}
+          token: ${{ secrets.DIVEST_INFRA_DISPATCH }}
           repository: reedm/divest-infra
           event-type: new-release
           client-payload: '{"tag": "${{ github.ref_name }}"}'
