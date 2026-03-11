@@ -1,0 +1,43 @@
+# Private dev environment (speckit tooling and Claude commands)
+.claude/
+# Speckit scripts and templates are private; memory/constitution.md is tracked
+.specify/scripts/
+.specify/templates/
+
+# AI assistant configuration of other tools
+.cursorrules
+.cursor/
+.vscode/
+.idea/
+*.code-workspace
+
+# Secrets and environment
+.env
+.env.local
+.env.*
+!.env.example
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Dependencies (generic — update when tech stack is decided)
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+.python-version
+
+# Build output
+dist/
+build/
+out/
+*.egg-info/
+
+# Logs and temp
+*.log
+tmp/
+.tmp/
