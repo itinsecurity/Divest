@@ -29,8 +29,7 @@ chooses to host it — local machine, VPS, home server — without vendor lock-i
 The canonical stack is: **Next.js (App Router), TypeScript, Prisma, SQLite (local) /
 Postgres (production), Tailwind, Recharts, Auth.js**.
 
-Auth provider integrations MUST sit behind an abstraction layer — no hardcoded dependency on any
-specific auth provider; configuration is entirely via environment variables. No stack additions or substitutions without a constitution amendment.
+AI provider integrations must sit behind an abstraction layer — no hardcoded dependency on any specific provider. Auth provider is likewise abstracted — no hardcoded dependency on any specific auth provider; configuration is entirely via environment variables. No stack additions or substitutions without a constitution amendment.
 
 **Rationale**: A stable, explicit stack eliminates decision fatigue and keeps the codebase
 comprehensible for a single-developer project.
