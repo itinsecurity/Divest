@@ -30,7 +30,7 @@ Use `gh` CLI for all GitHub operations:
 - `chore/description-of-task`
 - `hotfix/critical-issue`
 
-**PR title format**: `[Feature/Bugfix/Hotfix/Chore]: Description`
+**PR title format**: Conventional Commits — `type(scope): description` (e.g. `feat: add login`, `fix(auth): handle timeout`). The PR title becomes the squash commit message on `main`.
 
 ## Release Process
 

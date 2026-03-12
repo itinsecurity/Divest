@@ -58,7 +58,7 @@ Use the [feature request issue template](.github/ISSUE_TEMPLATE/feature_request.
 
 4. Push your branch and open a PR against `main`. Fill in the [PR template](.github/PULL_REQUEST_TEMPLATE.md).
 
-5. PRs are merged by **squash merge** — keep the squash commit message clear and descriptive.
+5. PRs are merged by **squash merge**. The PR title becomes the squash commit message on `main`, so it must follow the Conventional Commits format below (e.g. `feat: add user preferences endpoint`).
 
 ## Commit Message Convention
 
