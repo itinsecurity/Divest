@@ -36,6 +36,14 @@ dist/
 build/
 out/
 *.egg-info/
+.next/
+*.tsbuildinfo
+
+# Database files
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
 
 # Logs and temp
 *.log

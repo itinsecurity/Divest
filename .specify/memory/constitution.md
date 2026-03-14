@@ -1,14 +1,14 @@
 <!--
 SYNC IMPACT REPORT
-Version change: 0.0.0 → 1.0.0
-Modified principles: None (initial population — all principles are new)
-Added sections: Core Principles (I–V), Development Workflow, Governance
-Removed sections: N/A
+Version change: 1.0.0 → 1.1.0
+Modified principles: IV. Testing — added Build Verification and E2E Coverage sub-requirements
+Added sections: None (expanded existing section)
+Removed sections: None
 Templates requiring updates:
-  ✅ .specify/templates/plan-template.md — Constitution Check gate references constitution; no structural change needed
+  ✅ .specify/templates/plan-template.md — Constitution Check gate references constitution; no structural change needed (build/E2E gates are constitution-level, not template-level)
   ✅ .specify/templates/spec-template.md — no constitution-specific references; no change needed
-  ✅ .specify/templates/tasks-template.md — no constitution-specific references; no change needed
-Follow-up TODOs: None — all fields populated
+  ✅ .specify/templates/tasks-template.md — no structural change needed; tasks already support test phases and checkpoints
+Follow-up TODOs: None
 -->
 
 # Divest Constitution
@@ -61,9 +61,26 @@ What constitutes adequate test coverage varies by layer:
 - **Bug fixes**: Every bug fix MUST be accompanied by a regression test that reproduces the
   defect before the fix is applied.
 
+#### Build Verification
+
+A passing test suite that does not verify the application boots and serves real requests provides
+no deployment confidence. All features MUST pass `next build` before the implementation phase is
+considered complete. Type checking (`tsc`) is not a substitute — it does not enforce
+framework-level constraints such as Server Component rules, route validation, or build-time
+optimizations.
+
+#### E2E Coverage
+
+Every user-facing feature MUST have at least one Playwright test covering the happy path before
+the PR is mergeable. A stub that always passes is worse than no test, because it creates the
+illusion of coverage. E2E tests MUST run in CI against a built application
+(`next build && next start`), not a dev server.
+
 **Rationale**: TDD keeps implementation honest and produces a safety net that matters most for
 financial logic, where a silent error has real consequences. The standard for *what* to test is
-calibrated by risk, not relaxed as a default.
+calibrated by risk, not relaxed as a default. Build verification and E2E tests close the gap
+between "tests pass" and "the application actually works" — without them, passing CI provides
+false confidence.
 
 ### V. Simplicity
 
@@ -98,4 +115,4 @@ This constitution supersedes all other project conventions. Amendments require:
 Compliance is reviewed at every PR via the Constitution Check gate in `plan.md`. Use `CLAUDE.md`
 for runtime development guidance.
 
-**Version**: 1.0.0 | **Ratified**: 2026-03-12 | **Last Amended**: 2026-03-12
+**Version**: 1.1.0 | **Ratified**: 2026-03-12 | **Last Amended**: 2026-03-14

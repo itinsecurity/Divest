@@ -1,0 +1,56 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Note: Prisma 6 with SQLite uses JSONB for Json fields.
+// For enums, Prisma stores them as TEXT in SQLite.
+
+model AssetProfile {
+  id                   String   @id @default(cuid())
+  instrumentType       String   // InstrumentType enum: STOCK | FUND
+  isin                 String?  @unique
+  ticker               String?
+  name                 String?
+  exchange             String?
+  country              String?
+  sector               String?
+  industry             String?
+  fundManager          String?
+  fundCategory         String?  // FundCategory enum: EQUITY | BOND | COMBINATION
+  equityPct            Decimal?
+  bondPct              Decimal?
+  sectorWeightings     String?  // JSON serialized as TEXT
+  geographicWeightings String?  // JSON serialized as TEXT
+  fieldSources         String   @default("{}")  // JSON serialized as TEXT
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  holdings             Holding[]
+}
+
+model Holding {
+  id                   String   @id @default(cuid())
+  instrumentIdentifier String
+  instrumentType       String   // InstrumentType enum: STOCK | FUND
+  accountName          String
+  shares               Decimal?
+  pricePerShare        Decimal?
+  currentValue         Decimal?
+  enrichmentStatus     String   @default("PENDING")  // EnrichmentStatus enum
+  assetProfileId       String?
+  lastUpdated          DateTime @default(now())
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  assetProfile         AssetProfile? @relation(fields: [assetProfileId], references: [id])
+
+  @@unique([accountName, instrumentIdentifier])
+}
