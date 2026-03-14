@@ -41,6 +41,30 @@ jobs:
       - name: Lint
         run: npm run lint
 
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: scan
+    env:
+      DATABASE_URL: file:./ci-build.db
+      AUTH_SECRET: ci-build-secret-32-chars-minimum!!
+      AUTH_USERNAME: ci
+      AUTH_PASSWORD_HASH_B64: JDJhJDEwJFlFRUUzTjg3VnUvM0RIazllRktHTy5wSkFrQlRqMGVvODF0SEJpcW1ILk1VUGQ4THJ0cXZH
+      NEXTAUTH_URL: http://localhost:3000
+      AI_PROVIDER: stub
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4.4.0
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Generate Prisma client
+        run: npx prisma generate
+      - name: Build
+        run: npm run build
+
   test:
     name: Unit Tests
     runs-on: ubuntu-latest
@@ -80,3 +104,40 @@ jobs:
         run: npx prisma db push --accept-data-loss
       - name: Run integration tests
         run: npm run test:integration
+
+  test-e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: scan
+    env:
+      DATABASE_URL: file:./test-e2e.db
+      AUTH_SECRET: ci-e2e-secret-32-chars-minimum!!!
+      AUTH_USERNAME: testuser
+      # bcrypt hash of "testpassword" (cost factor 10), base64-encoded
+      AUTH_PASSWORD_HASH_B64: JDJhJDEwJFlFRUUzTjg3VnUvM0RIazllRktHTy5wSkFrQlRqMGVvODF0SEJpcW1ILk1VUGQ4THJ0cXZH
+      NEXTAUTH_URL: http://localhost:3000
+      AUTH_TRUST_HOST: "true"
+      AI_PROVIDER: stub
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4.4.0
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Generate Prisma client
+        run: npx prisma generate
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+      - name: Build application
+        run: npm run build
+      - name: Run E2E tests
+        run: npm run test:e2e
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

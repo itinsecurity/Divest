@@ -7,7 +7,8 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { UserSuppliedBadge } from "@/components/ui/UserSuppliedBadge";
 import { updateHolding, deleteHolding } from "@/actions/holdings";
 import { updateProfileField, refreshProfile } from "@/actions/profiles";
-import { uploadDocument, ACCEPTED_MIME_TYPES, MAX_FILE_SIZE } from "@/actions/upload";
+import { uploadDocument } from "@/actions/upload";
+import { ACCEPTED_MIME_TYPES, MAX_FILE_SIZE } from "@/lib/schemas/upload";
 
 type Props = {
   holding: HoldingWithProfile;

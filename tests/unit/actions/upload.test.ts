@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { validateUploadFile, ACCEPTED_MIME_TYPES, MAX_FILE_SIZE } from "@/actions/upload";
+import { validateUploadFile, ACCEPTED_MIME_TYPES, MAX_FILE_SIZE } from "@/lib/schemas/upload";
 
 describe("validateUploadFile", () => {
   function makeFile(name: string, type: string, size: number): File {
