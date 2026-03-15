@@ -1,9 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
 
-// Pre-generated bcrypt hash for "testpassword" (cost factor 10), base64-encoded
-const TEST_PASSWORD_HASH_B64 =
-  "JDJhJDEwJFlFRUUzTjg3VnUvM0RIazllRktHTy5wSkFrQlRqMGVvODF0SEJpcW1ILk1VUGQ4THJ0cXZH";
-
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: false,
@@ -15,19 +11,25 @@ export default defineConfig({
   use: {
     baseURL: "http://localhost:3000",
     trace: "on-first-retry",
+    storageState: "tests/e2e/.auth/user.json",
   },
   projects: [
+    {
+      name: "setup",
+      testMatch: /global-setup\.ts/,
+    },
     {
       name: "chromium",
       use: {
         ...devices["Desktop Chrome"],
+        storageState: "tests/e2e/.auth/user.json",
         launchOptions: {
-          // Allow overriding with a pre-installed browser when downloading is unavailable
           ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
             ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH }
             : {}),
         },
       },
+      dependencies: ["setup"],
     },
   ],
   webServer: {
@@ -39,9 +41,9 @@ export default defineConfig({
         process.env.DATABASE_URL ??
         "postgresql://postgres:postgres@localhost:5432/divest_e2e",
       AUTH_SECRET: process.env.AUTH_SECRET ?? "e2e-test-secret-32-chars-minimum!!",
-      AUTH_USERNAME: process.env.AUTH_USERNAME ?? "testuser",
-      AUTH_PASSWORD_HASH_B64:
-        process.env.AUTH_PASSWORD_HASH_B64 ?? TEST_PASSWORD_HASH_B64,
+      AUTH_GITHUB_ID: process.env.AUTH_GITHUB_ID ?? "test-github-id",
+      AUTH_GITHUB_SECRET: process.env.AUTH_GITHUB_SECRET ?? "test-github-secret",
+      AUTH_GITHUB_OWNER_ID: process.env.AUTH_GITHUB_OWNER_ID ?? "99999999",
       NEXTAUTH_URL: process.env.NEXTAUTH_URL ?? "http://localhost:3000",
       AUTH_TRUST_HOST: process.env.AUTH_TRUST_HOST ?? "true",
       AI_PROVIDER: process.env.AI_PROVIDER ?? "stub",

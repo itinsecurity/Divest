@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import LogoutButton from "./LogoutButton";
 
 export default async function AppLayout({
   children,
@@ -36,8 +37,11 @@ export default async function AppLayout({
                 </Link>
               </div>
             </div>
-            <div className="text-sm text-gray-500">
-              {session.user?.name ?? "User"}
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-500">
+                {session.user?.name ?? "User"}
+              </span>
+              <LogoutButton />
             </div>
           </div>
         </div>
