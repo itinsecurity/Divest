@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-03-16
+
+### Added
+- GitHub OAuth authentication: login page replaced with "Sign in with GitHub" button
+- Single-owner access enforcement via `AUTH_GITHUB_OWNER_ID` environment variable
+- Logout button in the application nav bar, visible on every authenticated page
+- E2E tests for authentication: unauthenticated redirects, route protection, logout flow
+- Unit tests for the `signIn` callback (authorized owner, non-matching ID, wrong provider, missing env var)
+
+### Changed
+- Auth.js Credentials provider replaced with GitHub OAuth provider
+- E2E test authentication now uses pre-generated Auth.js JWT session tokens (Playwright storage state) — no GitHub OAuth app required for testing
+- Migrated Prisma to driver adapter pattern for PostgreSQL support
+- Switched default database provider from SQLite to PostgreSQL
+
+### Removed
+- `bcryptjs` dependency removed
+- `AUTH_USERNAME` and `AUTH_PASSWORD_HASH_B64` environment variables removed
+
 ## [0.1.0] - 2026-03-15
 
 ### Added
@@ -23,5 +42,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Actions release workflow with divest-infra dispatch
 - Dependabot for automated dependency updates
 
-[Unreleased]: https://github.com/itinsecurity/Divest/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/itinsecurity/Divest/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/itinsecurity/Divest/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/itinsecurity/Divest/releases/tag/v0.1.0
