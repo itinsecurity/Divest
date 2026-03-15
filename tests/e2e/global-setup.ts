@@ -1,6 +1,8 @@
 import { execSync } from "child_process";
+import { writeFileSync, mkdirSync } from "fs";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { encode } from "@auth/core/jwt";
 
 export default async function globalSetup() {
   const databaseUrl =
@@ -85,4 +87,33 @@ export default async function globalSetup() {
   } finally {
     await prisma.$disconnect();
   }
+
+  // Generate JWT session token for E2E test authentication (bypasses GitHub OAuth)
+  const secret = process.env.AUTH_SECRET ?? "e2e-test-secret-32-chars-minimum!!";
+  const ownerId = process.env.AUTH_GITHUB_OWNER_ID ?? "99999999";
+
+  const token = await encode({
+    token: { sub: ownerId },
+    secret,
+    salt: "authjs.session-token",
+  });
+
+  mkdirSync("tests/e2e/.auth", { recursive: true });
+  writeFileSync(
+    "tests/e2e/.auth/user.json",
+    JSON.stringify({
+      cookies: [
+        {
+          name: "authjs.session-token",
+          value: token,
+          domain: "localhost",
+          path: "/",
+          httpOnly: true,
+          secure: false,
+          sameSite: "Lax",
+        },
+      ],
+      origins: [],
+    })
+  );
 }
