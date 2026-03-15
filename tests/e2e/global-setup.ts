@@ -1,7 +1,6 @@
 import { execSync } from "child_process";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { Pool } from "pg";
 
 export default async function globalSetup() {
   const databaseUrl =
@@ -15,8 +14,7 @@ export default async function globalSetup() {
   });
 
   // Seed the E2E test database
-  const pool = new Pool({ connectionString: databaseUrl });
-  const adapter = new PrismaPg(pool);
+  const adapter = new PrismaPg({ connectionString: databaseUrl });
   const prisma = new PrismaClient({ adapter });
 
   try {
@@ -86,6 +84,5 @@ export default async function globalSetup() {
     });
   } finally {
     await prisma.$disconnect();
-    await pool.end();
   }
 }

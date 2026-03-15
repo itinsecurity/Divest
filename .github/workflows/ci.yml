@@ -159,6 +159,8 @@ jobs:
         run: npx prisma generate
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
+      - name: Run migrations
+        run: npx prisma migrate deploy
       - name: Build application
         run: npm run build
       - name: Run E2E tests

@@ -1,7 +1,4 @@
 import { defineConfig, devices } from "@playwright/test";
-import path from "path";
-
-const E2E_DB_PATH = path.resolve(process.cwd(), "test-e2e.db");
 
 // Pre-generated bcrypt hash for "testpassword" (cost factor 10), base64-encoded
 const TEST_PASSWORD_HASH_B64 =
@@ -38,12 +35,16 @@ export default defineConfig({
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     env: {
-      DATABASE_URL: `file:${E2E_DB_PATH}`,
-      AUTH_SECRET: "e2e-test-secret-32-chars-minimum!!",
-      AUTH_USERNAME: "testuser",
-      AUTH_PASSWORD_HASH_B64: TEST_PASSWORD_HASH_B64,
-      NEXTAUTH_URL: "http://localhost:3000",
-      AI_PROVIDER: "stub",
+      DATABASE_URL:
+        process.env.DATABASE_URL ??
+        "postgresql://postgres:postgres@localhost:5432/divest_e2e",
+      AUTH_SECRET: process.env.AUTH_SECRET ?? "e2e-test-secret-32-chars-minimum!!",
+      AUTH_USERNAME: process.env.AUTH_USERNAME ?? "testuser",
+      AUTH_PASSWORD_HASH_B64:
+        process.env.AUTH_PASSWORD_HASH_B64 ?? TEST_PASSWORD_HASH_B64,
+      NEXTAUTH_URL: process.env.NEXTAUTH_URL ?? "http://localhost:3000",
+      AUTH_TRUST_HOST: process.env.AUTH_TRUST_HOST ?? "true",
+      AI_PROVIDER: process.env.AI_PROVIDER ?? "stub",
     },
   },
 });
