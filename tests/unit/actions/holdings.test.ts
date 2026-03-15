@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   createHoldingSchema,
   updateHoldingSchema,
-} from "@/actions/holdings";
+} from "@/lib/schemas/holdings";
 
 describe("createHoldingSchema", () => {
   it("accepts a valid STOCK holding", () => {
