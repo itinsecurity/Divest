@@ -8,11 +8,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ["tests/integration/setup.ts"],
     pool: "forks",
-    poolOptions: {
-      forks: {
-        singleFork: true,
-      },
-    },
+    maxWorkers: 1,
     env: {
       DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/divest_test",
       AUTH_USERNAME: "testuser",

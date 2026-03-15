@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import { mergeProfileFields, type AssetProfileUpdateData } from "./types";
 import type { FieldSources } from "@/types";
-import { Decimal } from "@prisma/client/runtime/library";
+import { Prisma } from "@prisma/client";
 
 const ISIN_REGEX = /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/;
 
@@ -151,8 +151,8 @@ export async function runPrimaryEnrichment(profileId: string): Promise<void> {
     industry: profile.industry,
     fundManager: profile.fundManager,
     fundCategory: profile.fundCategory,
-    equityPct: profile.equityPct ? (profile.equityPct as Decimal).toNumber() : null,
-    bondPct: profile.bondPct ? (profile.bondPct as Decimal).toNumber() : null,
+    equityPct: profile.equityPct ? (profile.equityPct as Prisma.Decimal).toNumber() : null,
+    bondPct: profile.bondPct ? (profile.bondPct as Prisma.Decimal).toNumber() : null,
     sectorWeightings: parseJson<Record<string, number>>(profile.sectorWeightings as string | null),
     geographicWeightings: parseJson<Record<string, number>>(profile.geographicWeightings as string | null),
   };
@@ -169,7 +169,7 @@ export async function runPrimaryEnrichment(profileId: string): Promise<void> {
     if (key === "sectorWeightings" || key === "geographicWeightings") {
       updateData[key] = value ? JSON.stringify(value) : null;
     } else if (key === "equityPct" || key === "bondPct") {
-      updateData[key] = value !== null ? new Decimal(value as number) : null;
+      updateData[key] = value !== null ? new Prisma.Decimal(value as number) : null;
     } else {
       updateData[key] = value;
     }
