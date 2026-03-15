@@ -1,15 +1,16 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 
 // Lazy factory to ensure DATABASE_URL is read after setup.ts sets it
 function createTestPrisma(): PrismaClient {
-  return new PrismaClient({
-    datasources: {
-      db: {
-        url: process.env.DATABASE_URL ?? "postgresql://postgres:postgres@localhost:5432/divest_test",
-      },
-    },
-    log: ["error"],
+  const pool = new Pool({
+    connectionString:
+      process.env.DATABASE_URL ??
+      "postgresql://postgres:postgres@localhost:5432/divest_test",
   });
+  const adapter = new PrismaPg(pool);
+  return new PrismaClient({ adapter, log: ["error"] });
 }
 
 // Lazily initialized test prisma client

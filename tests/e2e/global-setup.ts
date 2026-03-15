@@ -1,4 +1,7 @@
 import { execSync } from "child_process";
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 
 export default async function globalSetup() {
   const databaseUrl =
@@ -12,10 +15,9 @@ export default async function globalSetup() {
   });
 
   // Seed the E2E test database
-  const { PrismaClient } = await import("@prisma/client");
-  const prisma = new PrismaClient({
-    datasources: { db: { url: databaseUrl } },
-  });
+  const pool = new Pool({ connectionString: databaseUrl });
+  const adapter = new PrismaPg(pool);
+  const prisma = new PrismaClient({ adapter });
 
   try {
     await prisma.holding.deleteMany();
@@ -84,5 +86,6 @@ export default async function globalSetup() {
     });
   } finally {
     await prisma.$disconnect();
+    await pool.end();
   }
 }
