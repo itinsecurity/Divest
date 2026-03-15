@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import type { ActionResult, HoldingWithProfile, AssetProfileData, FieldSources } from "@/types";
 import { revalidatePath } from "next/cache";
-import { Decimal } from "@prisma/client/runtime/library";
+import { Decimal } from "@prisma/client";
 import { createHoldingSchema, updateHoldingSchema } from "@/lib/schemas/holdings";
 
 // --- ISIN detection ---

@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import { mergeProfileFields, type AssetProfileUpdateData } from "./types";
 import type { FieldSources } from "@/types";
-import { Decimal } from "@prisma/client/runtime/library";
+import { Decimal } from "@prisma/client";
 
 const ISIN_REGEX = /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/;
 
