@@ -5,7 +5,7 @@ function createTestPrisma(): PrismaClient {
   return new PrismaClient({
     datasources: {
       db: {
-        url: process.env.DATABASE_URL ?? "file:./test-integration.db",
+        url: process.env.DATABASE_URL ?? "postgresql://postgres:postgres@localhost:5432/divest_test",
       },
     },
     log: ["error"],
