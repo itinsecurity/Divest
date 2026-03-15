@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import type { ActionResult, HoldingWithProfile, AssetProfileData, FieldSources } from "@/types";
 import { revalidatePath } from "next/cache";
-import { Decimal } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { createHoldingSchema, updateHoldingSchema } from "@/lib/schemas/holdings";
 
 // --- ISIN detection ---
@@ -16,7 +16,7 @@ function isISIN(identifier: string): boolean {
 
 // --- Helper: convert Prisma holding to HoldingWithProfile ---
 
-function decimalToNumber(val: Decimal | null): number | null {
+function decimalToNumber(val: Prisma.Decimal | null): number | null {
   if (val === null) return null;
   return val.toNumber();
 }
@@ -35,9 +35,9 @@ type PrismaHoldingWithProfile = {
   instrumentIdentifier: string;
   instrumentType: string;
   accountName: string;
-  shares: Decimal | null;
-  pricePerShare: Decimal | null;
-  currentValue: Decimal | null;
+  shares: Prisma.Decimal | null;
+  pricePerShare: Prisma.Decimal | null;
+  currentValue: Prisma.Decimal | null;
   enrichmentStatus: string;
   lastUpdated: Date;
   assetProfileId: string | null;
@@ -53,8 +53,8 @@ type PrismaHoldingWithProfile = {
     industry: string | null;
     fundManager: string | null;
     fundCategory: string | null;
-    equityPct: Decimal | null;
-    bondPct: Decimal | null;
+    equityPct: Prisma.Decimal | null;
+    bondPct: Prisma.Decimal | null;
     sectorWeightings: string | null;
     geographicWeightings: string | null;
     fieldSources: string;
@@ -150,39 +150,42 @@ export async function createHolding(
       }
     }
 
-    if (!assetProfileId) {
-      // Create a new AssetProfile stub
-      const profile = await prisma.assetProfile.create({
-        data: {
-          instrumentType: data.instrumentType,
-          ...(isISIN(data.instrumentIdentifier)
-            ? { isin: data.instrumentIdentifier }
-            : {}),
-          fieldSources: "{}",
-        },
-      });
-      assetProfileId = profile.id;
-    }
+    const holding = await prisma.$transaction(async (tx) => {
+      if (!assetProfileId) {
+        // Create a new AssetProfile stub inside the transaction so the FK
+        // constraint on the holding insert is satisfied within the same tx.
+        const profile = await tx.assetProfile.create({
+          data: {
+            instrumentType: data.instrumentType,
+            ...(isISIN(data.instrumentIdentifier)
+              ? { isin: data.instrumentIdentifier }
+              : {}),
+            fieldSources: "{}",
+          },
+        });
+        assetProfileId = profile.id;
+      }
 
-    const holding = await prisma.holding.create({
-      data: {
-        instrumentIdentifier: data.instrumentIdentifier,
-        instrumentType: data.instrumentType,
-        accountName: data.accountName,
-        shares: data.shares !== undefined ? new Decimal(data.shares) : null,
-        pricePerShare:
-          data.pricePerShare !== undefined
-            ? new Decimal(data.pricePerShare)
-            : null,
-        currentValue:
-          data.currentValue !== undefined
-            ? new Decimal(data.currentValue)
-            : null,
-        enrichmentStatus: "PENDING",
-        assetProfileId,
-        lastUpdated: new Date(),
-      },
-      include: { assetProfile: true },
+      return tx.holding.create({
+        data: {
+          instrumentIdentifier: data.instrumentIdentifier,
+          instrumentType: data.instrumentType,
+          accountName: data.accountName,
+          shares: data.shares !== undefined ? new Prisma.Decimal(data.shares) : null,
+          pricePerShare:
+            data.pricePerShare !== undefined
+              ? new Prisma.Decimal(data.pricePerShare)
+              : null,
+          currentValue:
+            data.currentValue !== undefined
+              ? new Prisma.Decimal(data.currentValue)
+              : null,
+          enrichmentStatus: "PENDING",
+          assetProfileId,
+          lastUpdated: new Date(),
+        },
+        include: { assetProfile: true },
+      });
     });
 
     // Fire-and-forget enrichment (do NOT await)
@@ -250,13 +253,13 @@ export async function updateHolding(
           ? { accountName: data.accountName }
           : {}),
         ...(data.shares !== undefined
-          ? { shares: new Decimal(data.shares) }
+          ? { shares: new Prisma.Decimal(data.shares) }
           : {}),
         ...(data.pricePerShare !== undefined
-          ? { pricePerShare: new Decimal(data.pricePerShare) }
+          ? { pricePerShare: new Prisma.Decimal(data.pricePerShare) }
           : {}),
         ...(data.currentValue !== undefined
-          ? { currentValue: new Decimal(data.currentValue) }
+          ? { currentValue: new Prisma.Decimal(data.currentValue) }
           : {}),
         ...(priceChanged ? { lastUpdated: new Date() } : {}),
       },
