@@ -1,22 +1,20 @@
 import { execSync } from "child_process";
-import path from "path";
-
-const E2E_DB_PATH = path.resolve(process.cwd(), "test-e2e.db");
 
 export default async function globalSetup() {
-  // Push schema to the E2E test database
-  execSync("npx prisma db push --accept-data-loss", {
-    env: {
-      ...process.env,
-      DATABASE_URL: `file:${E2E_DB_PATH}`,
-    },
+  const databaseUrl =
+    process.env.DATABASE_URL ||
+    "postgresql://postgres:postgres@localhost:5432/divest_e2e";
+
+  // Apply migrations to the E2E test database
+  execSync("npx prisma migrate deploy", {
+    env: { ...process.env, DATABASE_URL: databaseUrl },
     stdio: "pipe",
   });
 
   // Seed the E2E test database
   const { PrismaClient } = await import("@prisma/client");
   const prisma = new PrismaClient({
-    datasources: { db: { url: `file:${E2E_DB_PATH}` } },
+    datasources: { db: { url: databaseUrl } },
   });
 
   try {
