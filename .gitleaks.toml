@@ -1,0 +1,11 @@
+title = "Divest gitleaks configuration"
+
+[allowlist]
+description = "Known false positives"
+# Bcrypt hashes of test passwords hardcoded in CI/E2E infrastructure are not real secrets.
+# These files contain intentionally static test credentials (cost-10 bcrypt hashes of
+# fixed test passwords) required for deterministic CI and E2E test setup.
+paths = [
+    '''^\.github/workflows/ci\.yml$''',
+    '''^playwright\.config\.ts$''',
+]

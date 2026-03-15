@@ -7,3 +7,17 @@ updates:
       interval: weekly
     labels:
       - dependencies
+
+  # Keep npm dependencies up to date
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+    ignore:
+      # next-auth v5 is in beta — don't auto-update
+      - dependency-name: next-auth
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor

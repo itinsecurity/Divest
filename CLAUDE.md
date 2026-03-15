@@ -1,4 +1,4 @@
-# CLAUDE.md
+﻿# CLAUDE.md
 
 This file provides guidance to Claude Code when working with code in this repository.
 
@@ -41,10 +41,12 @@ Use the `/release` command to guide through versioning, changelog update, taggin
 *This section will be updated as the project develops.*
 
 ### Active Branch
-`main` — Initial repository setup
+`001-holdings-portfolio` — Holdings Registration and Portfolio Profile
 
 ### Current Status
-Repository initialized. Core open-source infrastructure in place. Constitution pending population via `/speckit.constitution`. App not yet started.
+Feature `001-holdings-portfolio` fully implemented (T001–T060, all 60 tasks). Application is runnable. Ready for PR.
+
+**What's working**: Full holdings CRUD, primary enrichment queue (stub fetchers), AI secondary enrichment pipeline (stub AI provider), spread analysis (stock/interest, sector, geographic), manual profile field editing (user-supplied tracking), profile refresh, Auth.js credentials auth, Prisma schema + migrations, seed data. 88 unit tests + 31 integration tests passing, 0 TypeScript errors. CI updated with real lint/test/typecheck jobs.
 
 ### Known Issues
 None currently.
