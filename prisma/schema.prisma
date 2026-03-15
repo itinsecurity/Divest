@@ -6,12 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
-// Note: Prisma 6 with SQLite uses JSONB for Json fields.
-// For enums, Prisma stores them as TEXT in SQLite.
 
 model AssetProfile {
   id                   String   @id @default(cuid())

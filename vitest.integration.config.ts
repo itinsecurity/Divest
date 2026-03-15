@@ -14,7 +14,7 @@ export default defineConfig({
       },
     },
     env: {
-      DATABASE_URL: "file:./test-integration.db",
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/divest_test",
       AUTH_USERNAME: "testuser",
       AUTH_PASSWORD_HASH: "$2b$10$test",
       AUTH_SECRET: "test-secret",

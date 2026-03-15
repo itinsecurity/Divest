@@ -3,7 +3,10 @@ import { vi } from "vitest";
 
 // Set environment variables before any module imports
 // (vitest env config may not apply early enough for Prisma singleton initialization)
-process.env.DATABASE_URL = "file:./test-integration.db";
+if (!process.env.DATABASE_URL) {
+  process.env.DATABASE_URL =
+    "postgresql://postgres:postgres@localhost:5432/divest_test";
+}
 process.env.AUTH_USERNAME = "testuser";
 process.env.AUTH_PASSWORD_HASH = "$2b$10$test";
 process.env.AUTH_SECRET = "test-secret";
@@ -15,10 +18,8 @@ vi.mock("next/cache", () => ({
 }));
 
 beforeAll(async () => {
-  // Push schema to test database (creates it if it doesn't exist, applies schema changes)
-  // Using --accept-data-loss for SQLite dev database only — not production
-  execSync("npx prisma db push --accept-data-loss", {
-    env: { ...process.env, DATABASE_URL: "file:./test-integration.db" },
+  execSync("npx prisma migrate deploy", {
+    env: { ...process.env },
     stdio: "pipe",
   });
 });
