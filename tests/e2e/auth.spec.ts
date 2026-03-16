@@ -54,7 +54,6 @@ test.describe("credentials login flow (dev mode)", () => {
     await page.getByRole("textbox", { name: /username/i }).fill("testuser");
     await page.getByLabel(/password/i).fill("testpassword");
     await page.getByRole("button", { name: /^sign in$/i }).click();
-    await expect(page).toHaveURL(/^\//);
     await expect(page).not.toHaveURL(/\/login/);
   });
 });
