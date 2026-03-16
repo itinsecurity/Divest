@@ -33,7 +33,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npm run start",
+    command: "npm run dev",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     env: {
@@ -47,6 +47,11 @@ export default defineConfig({
       NEXTAUTH_URL: process.env.NEXTAUTH_URL ?? "http://localhost:3000",
       AUTH_TRUST_HOST: process.env.AUTH_TRUST_HOST ?? "true",
       AI_PROVIDER: process.env.AI_PROVIDER ?? "stub",
+      // Dev credentials: bcrypt hash of "testpassword" (cost 10), base64-encoded
+      AUTH_USERNAME: process.env.AUTH_USERNAME ?? "testuser",
+      AUTH_PASSWORD_HASH_B64:
+        process.env.AUTH_PASSWORD_HASH_B64 ??
+        "JDJhJDEwJFlFRUUzTjg3VnUvM0RIazllRktHTy5wSkFrQlRqMGVvODF0SEJpcW1ILk1VUGQ4THJ0cXZH",
     },
   },
 });
