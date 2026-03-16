@@ -1,12 +1,11 @@
 # CodeQL configuration file
 
-# Define which paths to exclude from the CodeQL analysis
-excluded-paths:
-  - tests/
+paths-ignore:
+  - '**/tests/**'
 
-# Use the security-extended query pack
 queries:
-  - security-extended
+  - uses: security-extended
 
-# Exclude experimental queries
-experimental: false
+query-filters:
+  - exclude:
+      tags contain: experimental
