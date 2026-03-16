@@ -36,6 +36,28 @@ test.describe("unauthenticated access", () => {
   });
 });
 
+test.describe("credentials login flow (dev mode)", () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  test("login page renders credentials form in development mode", async ({
+    page,
+  }) => {
+    await page.goto("/login");
+    await expect(page.getByRole("textbox", { name: /username/i })).toBeVisible();
+    await expect(page.getByRole("textbox", { name: /password/i })).toBeVisible();
+  });
+
+  test("valid credentials redirect to application home page", async ({
+    page,
+  }) => {
+    await page.goto("/login");
+    await page.getByRole("textbox", { name: /username/i }).fill("testuser");
+    await page.getByLabel(/password/i).fill("testpassword");
+    await page.getByRole("button", { name: /^sign in$/i }).click();
+    await expect(page).not.toHaveURL(/\/login/);
+  });
+});
+
 test.describe("logout flow", () => {
   test("authenticated user can log out and is redirected to /login", async ({
     page,
