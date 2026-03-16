@@ -1,0 +1,10 @@
+# CodeQL Configuration
+
+version: 2.5.3
+queries:
+  - codeql-sharp
+  - codeql-javascript
+  - codeql-typescript
+  - codeql-go
+disable-default-queries: true
+primary-language: typescript
