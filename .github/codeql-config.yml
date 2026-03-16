@@ -1,10 +1,12 @@
-# CodeQL Configuration
+# CodeQL configuration file
 
-version: 2.5.3
+# Define which paths to exclude from the CodeQL analysis
+excluded-paths:
+  - tests/
+
+# Use the security-extended query pack
 queries:
-  - codeql-sharp
-  - codeql-javascript
-  - codeql-typescript
-  - codeql-go
-disable-default-queries: true
-primary-language: typescript
+  - security-extended
+
+# Exclude experimental queries
+experimental: false
