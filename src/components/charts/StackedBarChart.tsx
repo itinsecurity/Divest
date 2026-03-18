@@ -78,7 +78,7 @@ export function StackedBarChart({ balance, title }: Props) {
             }
           />
           <YAxis type="category" dataKey="name" hide />
-          <Tooltip formatter={(value: number) => [formatNOK(value)]} />
+          <Tooltip formatter={(value) => [formatNOK(Number(value ?? 0))]} />
           <Legend />
           <Bar dataKey="Equity" stackId="a" fill="#3b82f6" />
           <Bar dataKey="Interest" stackId="a" fill="#10b981" />
