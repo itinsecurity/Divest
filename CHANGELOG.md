@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-03-18
+
+### Added
+- Dev credentials login provider for development/testing environments
+
+### Changed
+- **BREAKING**: Dev credentials login provider changes the authentication mechanism; existing deployments must update their auth configuration
+- Next.js bumped to v16
+- Zod bumped to v4
+- Recharts bumped to v3
+- `@types/bcryptjs` bumped to v3
+- `actions/checkout` bumped to v6 in CI workflows
+- CodeQL: use security-extended query pack, exclude tests folder and experimental queries
+- CI workflow: add explicit permissions to all jobs
+
 ## [0.2.1] - 2026-03-16
 
 ### Fixed
@@ -48,7 +63,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Actions release workflow with divest-infra dispatch
 - Dependabot for automated dependency updates
 
-[Unreleased]: https://github.com/itinsecurity/Divest/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/itinsecurity/Divest/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/itinsecurity/Divest/compare/v0.2.1...v1.0.0
 [0.2.1]: https://github.com/itinsecurity/Divest/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/itinsecurity/Divest/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/itinsecurity/Divest/releases/tag/v0.1.0
