@@ -72,13 +72,13 @@ export function DonutChart({ buckets, title }: Props) {
             ))}
           </Pie>
           <Tooltip
-            formatter={(value: number, name: string) => [
+            formatter={(value, name) => [
               new Intl.NumberFormat("nb-NO", {
                 style: "currency",
                 currency: "NOK",
                 minimumFractionDigits: 0,
-              }).format(value),
-              name,
+              }).format(Number(value ?? 0)),
+              String(name ?? ""),
             ]}
           />
           <Legend
