@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-03-19
+
+### Changed
+- Force dynamic rendering for all (app) routes to prevent stale data in server-rendered pages
+
 ## [1.0.0] - 2026-03-18
 
 ### Added
@@ -63,7 +68,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Actions release workflow with divest-infra dispatch
 - Dependabot for automated dependency updates
 
-[Unreleased]: https://github.com/itinsecurity/Divest/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/itinsecurity/Divest/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/itinsecurity/Divest/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/itinsecurity/Divest/compare/v0.2.1...v1.0.0
 [0.2.1]: https://github.com/itinsecurity/Divest/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/itinsecurity/Divest/compare/v0.1.0...v0.2.0
