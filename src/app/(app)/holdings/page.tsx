@@ -1,6 +1,8 @@
 import { getHoldings } from "@/actions/holdings";
 import { HoldingsClient } from "./HoldingsClient";
 
+export const dynamic = 'force-dynamic';
+
 export default async function HoldingsPage() {
   const result = await getHoldings();
   const holdings = result.success ? result.data : [];

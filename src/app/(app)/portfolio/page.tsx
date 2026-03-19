@@ -4,6 +4,8 @@ import { DonutChart } from "@/components/charts/DonutChart";
 import { StackedBarChart } from "@/components/charts/StackedBarChart";
 import { AccountFilter } from "@/components/ui/AccountFilter";
 
+export const dynamic = 'force-dynamic';
+
 type Props = {
   searchParams: Promise<{ account?: string }>;
 };
