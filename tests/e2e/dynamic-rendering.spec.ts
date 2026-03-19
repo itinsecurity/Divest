@@ -30,7 +30,7 @@ test("holdings page renders fresh data after update without rebuild (dynamic ren
   await page.fill('input[name="accountName"]', updatedAccount);
   await page.click('button[type="submit"]:has-text("Save Changes")');
   // Wait for the edit form to close (Edit button reappears) before navigating away
-  await expect(page.getByRole("button", { name: "Edit" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Edit", exact: true })).toBeVisible();
 
   // Step 3: Full server navigation back to /holdings — if pages were statically
   // pre-rendered the old account name would appear; force-dynamic ensures fresh data
