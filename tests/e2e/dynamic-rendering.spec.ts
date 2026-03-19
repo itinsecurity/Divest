@@ -16,8 +16,9 @@ test("holdings page renders fresh data after update without rebuild (dynamic ren
   await page.fill('input[name="pricePerShare"]', "100");
   await page.click('button[type="submit"]:has-text("Add Holding")');
 
-  // Verify the holding appears in the list
-  const holdingRow = page.getByRole("row", { name: /DYNTEST/ });
+  // Use uniqueAccount to scope the row — avoids strict mode violation if previous
+  // test runs left DYNTEST rows in the database
+  const holdingRow = page.getByRole("row", { name: new RegExp(uniqueAccount) });
   await expect(holdingRow).toBeVisible();
 
   // Step 2: Navigate to the holding's detail page and update the account name
@@ -28,7 +29,8 @@ test("holdings page renders fresh data after update without rebuild (dynamic ren
   const updatedAccount = uniqueAccount + "-updated";
   await page.fill('input[name="accountName"]', updatedAccount);
   await page.click('button[type="submit"]:has-text("Save Changes")');
-  await expect(page.getByRole("heading", { name: "Edit" })).not.toBeVisible();
+  // Wait for the edit form to close (Edit button reappears) before navigating away
+  await expect(page.getByRole("button", { name: "Edit" })).toBeVisible();
 
   // Step 3: Full server navigation back to /holdings — if pages were statically
   // pre-rendered the old account name would appear; force-dynamic ensures fresh data
