@@ -3,6 +3,8 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import LogoutButton from "./LogoutButton";
 
+export const dynamic = 'force-dynamic';
+
 export default async function AppLayout({
   children,
 }: {

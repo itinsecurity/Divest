@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { EDITABLE_PROFILE_FIELDS } from "@/actions/profiles";
+import { EDITABLE_PROFILE_FIELDS } from "@/lib/profileFields";
 
 // Mock DB for unit tests — profiles tests mostly cover validation logic
 vi.mock("@/lib/db", () => ({

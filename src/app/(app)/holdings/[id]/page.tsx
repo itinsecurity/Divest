@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { getHoldings } from "@/actions/holdings";
 import { HoldingDetailClient } from "./HoldingDetailClient";
 
+export const dynamic = 'force-dynamic';
+
 type Props = {
   params: Promise<{ id: string }>;
 };
