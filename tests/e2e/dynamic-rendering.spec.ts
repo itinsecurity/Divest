@@ -36,6 +36,7 @@ test("holdings page renders fresh data after update without rebuild (dynamic ren
   // pre-rendered the old account name would appear; force-dynamic ensures fresh data
   await page.goto("/holdings");
 
-  // Step 4: Assert the updated account name is visible (server fetched fresh DB data)
-  await expect(page.getByText(updatedAccount)).toBeVisible();
+  // Step 4: Assert the updated account name appears in the table (not just the filter
+  // dropdown option) — proves the server fetched fresh data from the database
+  await expect(page.getByRole("cell", { name: updatedAccount, exact: true })).toBeVisible();
 });
