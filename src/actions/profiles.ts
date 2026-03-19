@@ -3,24 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import type { ActionResult, FieldSources, AssetProfileData } from "@/types";
-
-export const EDITABLE_PROFILE_FIELDS = [
-  "name",
-  "isin",
-  "ticker",
-  "exchange",
-  "country",
-  "sector",
-  "industry",
-  "fundManager",
-  "fundCategory",
-  "equityPct",
-  "bondPct",
-  "sectorWeightings",
-  "geographicWeightings",
-] as const;
-
-type EditableField = (typeof EDITABLE_PROFILE_FIELDS)[number];
+import { EDITABLE_PROFILE_FIELDS, type EditableProfileField as EditableField } from "@/lib/profileFields";
 
 const JSON_FIELDS = new Set(["sectorWeightings", "geographicWeightings"]);
 const NUMERIC_FIELDS = new Set(["equityPct", "bondPct"]);
