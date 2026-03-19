@@ -5,7 +5,8 @@
       "Read(*)",
       "Write(*)",
       "Edit(*)",
-      "WebSearch"
+      "WebSearch",
+      "WebFetch"
     ],
     "deny": [
       "Bash(git merge*)",
