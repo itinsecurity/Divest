@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-03-20
+
+### Changed
+- Upgrade CI to Node 24
+- Migrate middleware.ts to proxy.ts for Next.js 16
+- Bump unpdf ^0.11 → ^1.4
+- Bump @vitejs/plugin-react v4 → v6, pin vite ^8
+- Bump flatted 3.4.1 → 3.4.2
+
 ## [1.1.0] - 2026-03-19
 
 ### Changed
@@ -68,7 +77,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Actions release workflow with divest-infra dispatch
 - Dependabot for automated dependency updates
 
-[Unreleased]: https://github.com/itinsecurity/Divest/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/itinsecurity/Divest/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/itinsecurity/Divest/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/itinsecurity/Divest/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/itinsecurity/Divest/compare/v0.2.1...v1.0.0
 [0.2.1]: https://github.com/itinsecurity/Divest/compare/v0.2.0...v0.2.1
