@@ -50,3 +50,6 @@ Feature `001-holdings-portfolio` fully implemented (T001–T060, all 60 tasks). 
 
 ### Known Issues
 None currently.
+
+## Recent Changes
+- 006-fix-input-contrast: CSS contrast fix — global form element styles, WCAG AA compliance

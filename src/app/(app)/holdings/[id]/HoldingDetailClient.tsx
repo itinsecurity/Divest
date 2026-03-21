@@ -411,7 +411,7 @@ export function HoldingDetailClient({ holding: initialHolding }: Props) {
                       </button>
                       <button
                         onClick={() => setEditingField(null)}
-                        className="rounded border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50"
+                        className="rounded border border-gray-300 px-2 py-1 text-xs text-gray-700 hover:bg-gray-50"
                       >
                         Cancel
                       </button>
