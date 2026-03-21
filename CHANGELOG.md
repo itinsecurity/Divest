@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-03-21
+
+### Fixed
+- Form input text invisible in dark OS mode — restore dark mode media query, pin form element colours to explicit light values (WCAG AA compliant)
+
+### Changed
+- CI release workflow gated on passing CI via `workflow_dispatch`
+
 ## [1.1.1] - 2026-03-20
 
 ### Changed
@@ -77,7 +85,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Actions release workflow with divest-infra dispatch
 - Dependabot for automated dependency updates
 
-[Unreleased]: https://github.com/itinsecurity/Divest/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/itinsecurity/Divest/compare/v1.1.2...HEAD
+[1.1.2]: https://github.com/itinsecurity/Divest/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/itinsecurity/Divest/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/itinsecurity/Divest/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/itinsecurity/Divest/compare/v0.2.1...v1.0.0
