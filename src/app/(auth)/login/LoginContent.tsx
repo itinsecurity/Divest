@@ -78,7 +78,7 @@ export default function LoginContent({ isDev }: { isDev: boolean }) {
         </form>
       )}
       <button
-        onClick={() => signIn("github")}
+        onClick={() => signIn("github", { callbackUrl: "/" })}
         className="w-full rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
       >
         Sign in with GitHub

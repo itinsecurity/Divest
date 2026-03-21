@@ -1,5 +1,14 @@
 import { test, expect } from "@playwright/test";
 
+test.describe("authenticated redirect", () => {
+  test("authenticated visit to /login redirects away from /login", async ({
+    page,
+  }) => {
+    await page.goto("/login");
+    await expect(page).not.toHaveURL(/\/login/);
+  });
+});
+
 test.describe("unauthenticated access", () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
