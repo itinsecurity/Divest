@@ -7,17 +7,23 @@
 
 The following rules MUST be present in `src/app/globals.css` and MUST NOT be overridden by component-level styles unless a specific, justified exception is documented:
 
-### 1. Light Mode Only
+### 1. Colour Scheme Variables
 
 ```css
 :root {
-  color-scheme: light;
   --background: #ffffff;
   --foreground: #171717;
 }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
 ```
 
-No `@media (prefers-color-scheme: dark)` block. The application is light-mode only.
+The application respects the user's OS colour scheme preference. The `--background` and `--foreground` variables adapt accordingly and are used by `body`.
 
 ### 2. Form Element Base Styles
 
@@ -25,12 +31,12 @@ No `@media (prefers-color-scheme: dark)` block. The application is light-mode on
 input,
 select,
 textarea {
-  color: var(--foreground);
+  color: #171717;
   background-color: #ffffff;
 }
 ```
 
-All form elements MUST have explicit `color` and `background-color` — they MUST NOT rely solely on CSS inheritance.
+Form elements MUST have explicit `color` and `background-color` — they MUST NOT rely solely on CSS inheritance. These are pinned to light-mode values because all component-level containers (cards, panels, nav) use hardcoded Tailwind `bg-white`/`bg-gray-50` classes. Using `var(--foreground)` would produce near-white text (`#ededed`) on a white background in dark mode — the original defect. Full dark mode support across the component layer (changing all `bg-white` to adaptive tokens) is a separate feature.
 
 ### 3. Body Base
 

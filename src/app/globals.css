@@ -1,9 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  color-scheme: light;
   --background: #ffffff;
   --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
 }
 
 @theme inline {
@@ -19,9 +25,15 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/*
+ * Pin form elements to light-mode colours. All component-level containers
+ * (cards, panels, nav) use hardcoded Tailwind bg-white / bg-gray-50, so
+ * inputs must explicitly match rather than inherit the dark-mode foreground
+ * colour (#ededed), which would be invisible against a white background.
+ */
 input,
 select,
 textarea {
-  color: var(--foreground);
+  color: #171717;
   background-color: #ffffff;
 }
