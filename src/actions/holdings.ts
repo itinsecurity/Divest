@@ -5,6 +5,7 @@ import type { ActionResult, HoldingWithProfile, AssetProfileData, EnrichmentCand
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { createHoldingSchema, updateHoldingSchema } from "@/lib/schemas/holdings";
+import { enrichmentQueue } from "@/lib/enrichment/queue";
 
 // --- ISIN detection ---
 
@@ -208,15 +209,9 @@ export async function createHolding(
       });
     });
 
-    // Fire-and-forget enrichment (do NOT await)
-    const enrichmentUrl = `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/api/enrichment`;
-    fetch(enrichmentUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ assetProfileId, type: "primary" }),
-    }).catch(() => {
-      // Ignore enrichment errors — it's fire-and-forget
-    });
+    // Fire-and-forget enrichment — enqueue directly to avoid auth overhead
+    // assetProfileId is guaranteed non-null here (set or created above)
+    enrichmentQueue.enqueue(assetProfileId!, "primary");
 
     revalidatePath("/holdings");
 
