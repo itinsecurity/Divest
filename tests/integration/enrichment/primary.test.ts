@@ -37,15 +37,20 @@ vi.mock("@/lib/enrichment/sources/storebrand", () => ({
 }));
 
 import { runPrimaryEnrichment } from "@/lib/enrichment/primary";
-import { euronextSource } from "@/lib/enrichment/sources/euronext";
+import { euronextSource, euronextFundSource } from "@/lib/enrichment/sources/euronext";
 import { storebrandSource } from "@/lib/enrichment/sources/storebrand";
 
 const mockEuronextFetch = vi.mocked(euronextSource.fetch);
 const mockStorebrandFetch = vi.mocked(storebrandSource.fetch);
+const mockEuronextFundFetch = vi.mocked(euronextFundSource.fetch);
 
 beforeEach(async () => {
   await resetDatabase();
   vi.clearAllMocks();
+  // Default: all sources return not_found (tests override as needed)
+  mockEuronextFetch.mockResolvedValue({ status: "not_found" });
+  mockStorebrandFetch.mockResolvedValue({ status: "not_found" });
+  mockEuronextFundFetch.mockResolvedValue({ status: "not_found" });
   vi.mocked(
     (await import("@/lib/enrichment/cache")).getCached
   ).mockResolvedValue(null);
@@ -223,6 +228,7 @@ describe("US2: fund enrichment via Storebrand", () => {
       status: "found",
       sourceId: "storebrand",
       data: {
+        name: "Storebrand Global Indeks A",
         fundManager: "Storebrand Asset Management",
         fundCategory: "EQUITY",
         equityPct: 96.5,
