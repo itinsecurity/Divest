@@ -16,7 +16,7 @@ test("holdings page displays seeded holdings", async ({ page }) => {
   await expect(page.getByText("Storebrand Global Indeks A")).toBeVisible();
 });
 
-test("add a stock holding via the form, verify it appears with PENDING badge", async ({
+test("add a stock holding via the form, verify it appears in the table", async ({
   page,
 }) => {
   await page.goto("/holdings");
@@ -24,36 +24,42 @@ test("add a stock holding via the form, verify it appears with PENDING badge", a
   await page.click('button:has-text("Add Holding")');
   await expect(page.getByRole("heading", { name: "Add New Holding" })).toBeVisible();
 
-  await page.fill('input[name="instrumentIdentifier"]', "EQNR");
+  // Use a fake ticker that won't match any seeded or enrichment-test profile
+  await page.fill('input[name="instrumentIdentifier"]', "NEWSTOCK999");
   await page.selectOption('select[name="instrumentType"]', "STOCK");
-  await page.fill('input[name="accountName"]', "Test Account");
+  await page.fill('input[name="accountName"]', "Holdings Stock Test");
   await page.fill('input[name="shares"]', "100");
   await page.fill('input[name="pricePerShare"]', "300");
 
   await page.click('button[type="submit"]:has-text("Add Holding")');
 
   await expect(page.getByRole("heading", { name: "Add New Holding" })).not.toBeVisible();
-  const eqnrRow = page.getByRole("row", { name: /EQNR/ });
-  await expect(eqnrRow).toBeVisible();
-  await expect(eqnrRow.getByText("Pending")).toBeVisible();
+  // Find by unique account name — the row may show the identifier or a profile
+  // name depending on enrichment timing, but the account is always stable.
+  const newRow = page.getByRole("row").filter({ hasText: "Holdings Stock Test" });
+  await expect(newRow).toBeVisible();
+  // Enrichment runs immediately; unknown ticker → Not Found
+  await expect(newRow.getByText("Not Found")).toBeVisible();
 });
 
-test("add a fund holding, verify it appears with correct value and PENDING badge", async ({
+test("add a fund holding, verify it appears in the table", async ({
   page,
 }) => {
   await page.goto("/holdings");
 
   await page.click('button:has-text("Add Holding")');
 
-  await page.fill('input[name="instrumentIdentifier"]', "GBFUND");
+  // Use a fake identifier that won't match any seeded or enrichment-test profile
+  await page.fill('input[name="instrumentIdentifier"]', "NEWFUND999");
   await page.selectOption('select[name="instrumentType"]', "FUND");
-  await page.fill('input[name="accountName"]', "Test Account");
+  await page.fill('input[name="accountName"]', "Holdings Fund Test");
   await page.fill('input[name="currentValue"]', "50000");
 
   await page.click('button[type="submit"]:has-text("Add Holding")');
 
   await expect(page.getByRole("heading", { name: "Add New Holding" })).not.toBeVisible();
-  const gbfundRow = page.getByRole("row", { name: /GBFUND/ });
-  await expect(gbfundRow).toBeVisible();
-  await expect(gbfundRow.getByText("Pending")).toBeVisible();
+  const newRow = page.getByRole("row").filter({ hasText: "Holdings Fund Test" });
+  await expect(newRow).toBeVisible();
+  // Enrichment runs immediately; unknown identifier → Not Found
+  await expect(newRow.getByText("Not Found")).toBeVisible();
 });

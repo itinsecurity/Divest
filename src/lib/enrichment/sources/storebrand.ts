@@ -81,6 +81,19 @@ const TEST_FIXTURES: Record<string, SourceResult> = {
       },
     },
   },
+  // Separate fixture used by the fund enrichment E2E test to avoid
+  // colliding with the seeded NO0010140502 profile in global-setup.
+  NO0010001500: {
+    status: "found",
+    sourceId: "storebrand",
+    data: {
+      name: "Test Storebrand Fund",
+      fundManager: "Test Fund Manager",
+      fundCategory: "EQUITY",
+      equityPct: 80,
+      bondPct: 20,
+    },
+  },
 };
 
 export const storebrandSource: DataSource = {

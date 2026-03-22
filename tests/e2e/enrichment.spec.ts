@@ -11,9 +11,10 @@ import { test, expect } from "@playwright/test";
  *   name=EQUINOR ASA, ticker=EQNR, exchange=Oslo Bors, country=Norway
  *   → PARTIAL (sector/industry not available from Euronext)
  *
- * Fund fixture (NO0010140502):
- *   fundManager=Storebrand Asset Management, fundCategory=EQUITY,
- *   equityPct=96.5, bondPct=3.5
+ * Fund fixture (NO0010001500) — separate from seeded NO0010140502 to avoid
+ * creating a second "Storebrand Global Indeks A" row in subsequent tests:
+ *   name=Test Storebrand Fund, fundManager=Test Fund Manager,
+ *   fundCategory=EQUITY, equityPct=80, bondPct=20
  *   → COMPLETE (all required fund fields present)
  */
 test("stock enrichment: ISIN resolves to PARTIAL with ticker and exchange", async ({
@@ -30,7 +31,7 @@ test("stock enrichment: ISIN resolves to PARTIAL with ticker and exchange", asyn
   // Fill in Equinor ISIN
   await page.fill('input[name="instrumentIdentifier"]', "NO0010096985");
   await page.selectOption('select[name="instrumentType"]', "STOCK");
-  await page.fill('input[name="accountName"]', "E2E Test Account");
+  await page.fill('input[name="accountName"]', "E2E Enrich Stock");
   await page.fill('input[name="shares"]', "100");
   await page.fill('input[name="pricePerShare"]', "300");
 
@@ -41,9 +42,9 @@ test("stock enrichment: ISIN resolves to PARTIAL with ticker and exchange", asyn
     page.getByRole("heading", { name: "Add New Holding" })
   ).not.toBeVisible();
 
-  // Click on the new row to navigate to the holding detail page.
-  // The row shows the identifier (no profile name yet while PENDING).
-  const row = page.getByRole("row").filter({ hasText: "NO0010096985" });
+  // Click on the new row — use the unique account name since the profile name
+  // may have already been populated by the time the page re-renders.
+  const row = page.getByRole("row").filter({ hasText: "E2E Enrich Stock" });
   await expect(row).toBeVisible();
   await row.click();
 
@@ -62,8 +63,9 @@ test("stock enrichment: ISIN resolves to PARTIAL with ticker and exchange", asyn
   await expect(page.getByText("EQNR")).toBeVisible();
   await expect(page.getByText("Oslo Bors")).toBeVisible();
 
-  // Assert status badge shows "Partial" (sector/industry absent from Euronext)
-  await expect(page.getByText("Partial")).toBeVisible();
+  // Assert status badge shows "Partial" (sector/industry absent from Euronext).
+  // Use exact:true to avoid matching the upload prompt "Partial data found…"
+  await expect(page.getByText("Partial", { exact: true })).toBeVisible();
 });
 
 test("fund enrichment: ISIN resolves to COMPLETE with fund manager and category", async ({
@@ -77,10 +79,11 @@ test("fund enrichment: ISIN resolves to COMPLETE with fund manager and category"
     page.getByRole("heading", { name: "Add New Holding" })
   ).toBeVisible();
 
-  // Fill in a Storebrand fund ISIN (fixture key in storebrand.ts test mode)
-  await page.fill('input[name="instrumentIdentifier"]', "NO0010140502");
+  // Use a separate ISIN fixture (NO0010001500) so this test creates a fresh
+  // profile and doesn't collide with the seeded NO0010140502 profile.
+  await page.fill('input[name="instrumentIdentifier"]', "NO0010001500");
   await page.selectOption('select[name="instrumentType"]', "FUND");
-  await page.fill('input[name="accountName"]', "E2E Test Account");
+  await page.fill('input[name="accountName"]', "E2E Enrich Fund");
   await page.fill('input[name="currentValue"]', "50000");
 
   await page.click('button[type="submit"]:has-text("Add Holding")');
@@ -90,8 +93,8 @@ test("fund enrichment: ISIN resolves to COMPLETE with fund manager and category"
     page.getByRole("heading", { name: "Add New Holding" })
   ).not.toBeVisible();
 
-  // Click on the new row
-  const row = page.getByRole("row").filter({ hasText: "NO0010140502" });
+  // Click on the new row — use the unique account name
+  const row = page.getByRole("row").filter({ hasText: "E2E Enrich Fund" });
   await expect(row).toBeVisible();
   await row.click();
 
@@ -104,8 +107,8 @@ test("fund enrichment: ISIN resolves to COMPLETE with fund manager and category"
     await expect(page.getByText("Pending")).not.toBeVisible({ timeout: 2000 });
   }).toPass({ timeout: 30000 });
 
-  // Assert fund profile fields populated by enrichment
-  await expect(page.getByText("Storebrand Asset Management")).toBeVisible();
+  // Assert fund profile fields populated by enrichment (from NO0010001500 fixture)
+  await expect(page.getByText("Test Fund Manager")).toBeVisible();
   await expect(page.getByText("EQUITY")).toBeVisible();
 
   // Assert status badge shows "Complete" (all required fund fields present)
