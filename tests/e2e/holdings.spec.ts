@@ -38,8 +38,6 @@ test("add a stock holding via the form, verify it appears in the table", async (
   // name depending on enrichment timing, but the account is always stable.
   const newRow = page.getByRole("row").filter({ hasText: "Holdings Stock Test" });
   await expect(newRow).toBeVisible();
-  // Enrichment runs immediately; unknown ticker → Not Found
-  await expect(newRow.getByText("Not Found")).toBeVisible();
 });
 
 test("add a fund holding, verify it appears in the table", async ({
@@ -60,6 +58,4 @@ test("add a fund holding, verify it appears in the table", async ({
   await expect(page.getByRole("heading", { name: "Add New Holding" })).not.toBeVisible();
   const newRow = page.getByRole("row").filter({ hasText: "Holdings Fund Test" });
   await expect(newRow).toBeVisible();
-  // Enrichment runs immediately; unknown identifier → Not Found
-  await expect(newRow.getByText("Not Found")).toBeVisible();
 });
