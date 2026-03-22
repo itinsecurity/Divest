@@ -16,6 +16,7 @@ function makeHolding(
     enrichmentStatus: "COMPLETE",
     lastUpdated: new Date().toISOString(),
     assetProfile: null,
+    candidates: [],
     ...overrides,
   };
 }

@@ -16,6 +16,14 @@ export type AssetProfileUpdateData = {
   geographicWeightings: Record<string, number> | null;
 };
 
+export type EnrichmentData = Partial<AssetProfileUpdateData>;
+
+export function buildEnrichmentData(
+  data: Partial<AssetProfileUpdateData>
+): Partial<AssetProfileUpdateData> {
+  return { ...data };
+}
+
 type IncomingSource = "enrichment" | "ai_extraction";
 
 /**

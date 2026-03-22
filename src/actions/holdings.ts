@@ -1,10 +1,11 @@
 "use server";
 
 import { prisma } from "@/lib/db";
-import type { ActionResult, HoldingWithProfile, AssetProfileData, FieldSources } from "@/types";
+import type { ActionResult, HoldingWithProfile, AssetProfileData, EnrichmentCandidateData, FieldSources } from "@/types";
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { createHoldingSchema, updateHoldingSchema } from "@/lib/schemas/holdings";
+import { enrichmentQueue } from "@/lib/enrichment/queue";
 
 // --- ISIN detection ---
 
@@ -58,6 +59,15 @@ type PrismaHoldingWithProfile = {
     sectorWeightings: string | null;
     geographicWeightings: string | null;
     fieldSources: string;
+    candidates?: Array<{
+      id: string;
+      name: string;
+      ticker: string | null;
+      isin: string | null;
+      exchange: string | null;
+      instrumentType: string;
+      sourceId: string;
+    }>;
   } | null;
 };
 
@@ -105,9 +115,20 @@ function toHoldingWithProfile(h: PrismaHoldingWithProfile): HoldingWithProfile {
     pricePerShare,
     currentValue,
     displayValue,
-    enrichmentStatus: h.enrichmentStatus as "PENDING" | "COMPLETE" | "PARTIAL" | "NOT_FOUND",
+    enrichmentStatus: h.enrichmentStatus as HoldingWithProfile["enrichmentStatus"],
     lastUpdated: h.lastUpdated.toISOString(),
     assetProfile,
+    candidates: (h.assetProfile?.candidates ?? []).map(
+      (c): EnrichmentCandidateData => ({
+        id: c.id,
+        name: c.name,
+        ticker: c.ticker,
+        isin: c.isin,
+        exchange: c.exchange,
+        instrumentType: c.instrumentType as "STOCK" | "FUND",
+        sourceId: c.sourceId,
+      })
+    ),
   };
 }
 
@@ -188,15 +209,9 @@ export async function createHolding(
       });
     });
 
-    // Fire-and-forget enrichment (do NOT await)
-    const enrichmentUrl = `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/api/enrichment`;
-    fetch(enrichmentUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ assetProfileId, type: "primary" }),
-    }).catch(() => {
-      // Ignore enrichment errors — it's fire-and-forget
-    });
+    // Fire-and-forget enrichment — enqueue directly to avoid auth overhead
+    // assetProfileId is guaranteed non-null here (set or created above)
+    enrichmentQueue.enqueue(assetProfileId!, "primary");
 
     revalidatePath("/holdings");
 
@@ -308,7 +323,11 @@ export async function getHoldings(
       where: filter?.accountName
         ? { accountName: filter.accountName }
         : undefined,
-      include: { assetProfile: true },
+      include: {
+        assetProfile: {
+          include: { candidates: { orderBy: { score: "desc" } } },
+        },
+      },
       orderBy: { createdAt: "desc" },
     });
 

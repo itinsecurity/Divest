@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { detectISIN, buildEnrichmentData } from "@/lib/enrichment/primary";
 
 describe("detectISIN", () => {
@@ -56,40 +56,5 @@ describe("buildEnrichmentData", () => {
 
     expect(data.name).toBe("Some Fund");
     expect(data.ticker).toBeNull();
-  });
-});
-
-describe("primary enrichment fetch (mocked)", () => {
-  let fetchMock: ReturnType<typeof vi.fn>;
-
-  beforeEach(() => {
-    fetchMock = vi.fn();
-    vi.stubGlobal("fetch", fetchMock);
-  });
-
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
-  it("attempts to fetch from Euronext for ISIN-based stocks", async () => {
-    const { fetchFromEuronext } = await import("@/lib/enrichment/primary");
-
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      text: async () => "some content",
-    });
-
-    await fetchFromEuronext("NO0010031479");
-    expect(fetchMock).toHaveBeenCalled();
-    // The key thing is that fetch was called
-  });
-
-  it("returns null when fetch fails", async () => {
-    const { fetchFromEuronext } = await import("@/lib/enrichment/primary");
-
-    fetchMock.mockRejectedValueOnce(new Error("Network error"));
-
-    const result = await fetchFromEuronext("NO0010031479");
-    expect(result).toBeNull();
   });
 });

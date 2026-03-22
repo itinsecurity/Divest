@@ -1,4 +1,4 @@
-type Status = "PENDING" | "COMPLETE" | "PARTIAL" | "NOT_FOUND";
+type Status = "PENDING" | "COMPLETE" | "PARTIAL" | "NOT_FOUND" | "NEEDS_INPUT";
 
 const statusConfig: Record<
   Status,
@@ -19,6 +19,10 @@ const statusConfig: Record<
   NOT_FOUND: {
     label: "Not Found",
     className: "bg-red-100 text-red-800",
+  },
+  NEEDS_INPUT: {
+    label: "Needs Input",
+    className: "bg-orange-100 text-orange-800",
   },
 };
 

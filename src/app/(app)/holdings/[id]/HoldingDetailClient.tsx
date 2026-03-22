@@ -173,6 +173,28 @@ export function HoldingDetailClient({ holding: initialHolding }: Props) {
     holding.enrichmentStatus === "NOT_FOUND" ||
     holding.enrichmentStatus === "PARTIAL";
 
+  const [isResolvingCandidate, startResolveTransition] = useTransition();
+  const [candidates, setCandidates] = useState(holding.candidates ?? []);
+
+  function handleSelectCandidate(candidateId: string) {
+    if (!holding.assetProfile) return;
+    startResolveTransition(async () => {
+      const res = await fetch("/api/enrichment/resolve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          assetProfileId: holding.assetProfile!.id,
+          candidateId,
+        }),
+      });
+      if (res.ok) {
+        setCandidates([]);
+        setHolding((prev) => ({ ...prev, enrichmentStatus: "PENDING" }));
+        router.refresh();
+      }
+    });
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -360,6 +382,47 @@ export function HoldingDetailClient({ holding: initialHolding }: Props) {
           </dl>
         )}
       </div>
+
+      {/* Disambiguation Card */}
+      {holding.enrichmentStatus === "NEEDS_INPUT" && candidates.length > 0 && (
+        <div className="rounded-lg border border-orange-200 bg-orange-50 p-6">
+          <h2 className="mb-2 text-lg font-semibold text-gray-900">
+            Disambiguation Required
+          </h2>
+          <p className="mb-4 text-sm text-gray-600">
+            Multiple instruments matched this identifier. Select the correct
+            one to continue enrichment.
+          </p>
+          <ul className="space-y-3">
+            {candidates.map((c) => (
+              <li
+                key={c.id}
+                className="flex items-center justify-between rounded-md border border-gray-200 bg-white p-4"
+              >
+                <div className="text-sm">
+                  <span className="font-medium text-gray-900">{c.name}</span>
+                  {c.ticker && (
+                    <span className="ml-2 text-gray-500">{c.ticker}</span>
+                  )}
+                  {c.isin && (
+                    <span className="ml-2 text-gray-400">{c.isin}</span>
+                  )}
+                  {c.exchange && (
+                    <span className="ml-2 text-gray-400">· {c.exchange}</span>
+                  )}
+                </div>
+                <button
+                  onClick={() => handleSelectCandidate(c.id)}
+                  disabled={isResolvingCandidate}
+                  className="ml-4 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {isResolvingCandidate ? "Selecting..." : "Select"}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Asset Profile */}
       {profile && (

@@ -36,5 +36,7 @@ export async function resetDatabase() {
   const client = getTestPrisma();
   // Delete in dependency order
   await client.holding.deleteMany();
+  await client.enrichmentCandidate.deleteMany();
   await client.assetProfile.deleteMany();
+  await client.enrichmentCache.deleteMany();
 }
