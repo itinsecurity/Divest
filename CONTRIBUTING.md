@@ -10,7 +10,9 @@ This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.
 
 ### Prerequisites
 
-> _Tech stack prerequisites will be documented here once the stack is finalised._
+- **Node.js 20+ LTS**
+- **PostgreSQL** — or use SQLite for lightweight local dev (set `DATABASE_URL="file:./dev.db"` in `.env.local`)
+- **Git**
 
 ### Local Development Setup
 
@@ -21,15 +23,31 @@ This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.
    ```
 
 2. Install dependencies:
-   > _Installation instructions will be added here._
+   ```bash
+   npm install
+   ```
 
 3. Copy the environment template and fill in local values:
    ```bash
-   cp .env.example .env
+   cp .env.example .env.local
+   ```
+   See [README.md](README.md#environment-variables) for a description of each variable.
+
+4. Set up the database:
+   ```bash
+   npx prisma db push    # Apply schema
+   npx prisma db seed    # Optional: load sample data
    ```
 
-4. Run the test suite to verify your setup:
-   > _Test command will be added here._
+5. Run the test suite to verify your setup:
+   ```bash
+   npm test
+   ```
+
+6. Start the dev server:
+   ```bash
+   npm run dev           # http://localhost:3000
+   ```
 
 ## How to Contribute
 
@@ -51,10 +69,17 @@ Use the [feature request issue template](.github/ISSUE_TEMPLATE/feature_request.
    - `feature/description-of-feature`
    - `bugfix/description-of-bug`
    - `chore/description-of-task`
+   - `hotfix/critical-issue`
 
 2. Make your changes. All new features require tests; all bug fixes require a regression test.
 
-3. Ensure the test suite passes and your code is formatted.
+3. Ensure all checks pass before opening a PR:
+   ```bash
+   npm run typecheck    # No TypeScript errors
+   npm run lint         # No ESLint errors
+   npm test             # Unit tests pass
+   npm run test:integration  # Integration tests pass
+   ```
 
 4. Push your branch and open a PR against `main`. Fill in the [PR template](.github/PULL_REQUEST_TEMPLATE.md).
 
@@ -88,8 +113,23 @@ test(auth): add missing edge-case coverage
 
 ## Running Tests
 
-> _Test commands will be documented here once the tech stack is set._
+```bash
+npm test                      # Unit tests (Vitest)
+npm run test:watch            # Watch mode — primary TDD loop
+npm run test:integration      # Integration tests (real SQLite DB)
+npm run test:e2e              # E2E tests (Playwright)
+```
+
+Tests live under `tests/`:
+- `tests/unit/` — unit tests for calculations, utilities, and components
+- `tests/integration/` — server action tests against a real SQLite database
+- `tests/e2e/` — Playwright end-to-end user flows
 
 ## Code Style
 
-> _Linting and formatting commands will be documented here once the tech stack is set._
+```bash
+npm run lint        # ESLint (reports errors; fix with --fix flag)
+npm run typecheck   # TypeScript strict type checking
+```
+
+The project uses ESLint with the Next.js config and TypeScript strict mode. There are no separate formatting rules — just keep your code consistent with the surrounding style.
