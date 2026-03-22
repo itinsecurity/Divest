@@ -1,6 +1,8 @@
 # Divest
 
 A personal investment portfolio tracker for Norwegian markets. Register holdings across brokerage accounts, enrich them with structured asset data automatically, and view your portfolio spread across stock/interest balance, sectors, and geography.
+This is a plaything - not at all to be taken seriously. Not secure, not professional. It's only a use case for experimenting, learning about coding with Claude Code, maintaining a code base, automating deployment and maintenance on different platforms.
+The portfolio use case was chosen because it has several learning opportunities:  a simple web app, opportunities for various data visualisations, calculations, AI assistance and more. The only reason it's public is to take advantage of GitHub security scanning features.
 
 ## Features
 
