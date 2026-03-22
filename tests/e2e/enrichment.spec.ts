@@ -109,7 +109,8 @@ test("fund enrichment: ISIN resolves to COMPLETE with fund manager and category"
 
   // Assert fund profile fields populated by enrichment (from NO0010001500 fixture)
   await expect(page.getByText("Test Fund Manager")).toBeVisible();
-  await expect(page.getByText("EQUITY")).toBeVisible();
+  // exact:true avoids case-insensitive match on the "Equity %" label
+  await expect(page.getByText("EQUITY", { exact: true })).toBeVisible();
 
   // Assert status badge shows "Complete" (all required fund fields present)
   await expect(page.getByText("Complete")).toBeVisible();
