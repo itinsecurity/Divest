@@ -11,9 +11,20 @@ export type HoldingWithProfile = {
   pricePerShare: number | null;
   currentValue: number | null;
   displayValue: number;
-  enrichmentStatus: "PENDING" | "COMPLETE" | "PARTIAL" | "NOT_FOUND";
+  enrichmentStatus: "PENDING" | "COMPLETE" | "PARTIAL" | "NOT_FOUND" | "NEEDS_INPUT";
   lastUpdated: string;
   assetProfile: AssetProfileData | null;
+  candidates: EnrichmentCandidateData[];
+};
+
+export type EnrichmentCandidateData = {
+  id: string;
+  name: string;
+  ticker: string | null;
+  isin: string | null;
+  exchange: string | null;
+  instrumentType: "STOCK" | "FUND";
+  sourceId: string;
 };
 
 export type AssetProfileData = {

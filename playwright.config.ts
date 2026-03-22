@@ -47,6 +47,7 @@ export default defineConfig({
       NEXTAUTH_URL: process.env.NEXTAUTH_URL ?? "http://localhost:3000",
       AUTH_TRUST_HOST: process.env.AUTH_TRUST_HOST ?? "true",
       AI_PROVIDER: process.env.AI_PROVIDER ?? "stub",
+      ENRICHMENT_TEST_MODE: process.env.ENRICHMENT_TEST_MODE ?? "true",
       // Dev credentials: bcrypt hash of "testpassword" (cost 10), base64-encoded
       AUTH_USERNAME: process.env.AUTH_USERNAME ?? "testuser",
       AUTH_PASSWORD_HASH_B64:

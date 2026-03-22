@@ -1,190 +1,55 @@
 import { prisma } from "@/lib/db";
 import { mergeProfileFields, type AssetProfileUpdateData } from "./types";
+import { normalizeIdentifier } from "./normalizer";
+import { getCached, setCached } from "./cache";
+import { scoreCandidate, shouldAutoSelect } from "./candidates";
 import type { FieldSources } from "@/types";
+import type { SourceResult, CandidateData, DataSource } from "./sources/registry";
 import { Prisma } from "@prisma/client";
+import { searchFallback } from "./search-fallback";
 
-const ISIN_REGEX = /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/;
+// Source imports — populated incrementally as phases complete
+import { euronextSource, euronextFundSource } from "./sources/euronext";
+import { storebrandSource } from "./sources/storebrand";
 
-export function detectISIN(identifier: string): boolean {
-  return ISIN_REGEX.test(identifier);
-}
+// Ordered list of data sources (priority 1 = first tried)
+const SOURCES: DataSource[] = [euronextSource, storebrandSource, euronextFundSource];
 
-export type EnrichmentData = Partial<AssetProfileUpdateData>;
+/** Fields required for COMPLETE status per instrument type */
+const STOCK_REQUIRED_FIELDS = [
+  "name",
+  "ticker",
+  "isin",
+  "exchange",
+  "country",
+  "sector",
+  "industry",
+] as const;
 
-export function buildEnrichmentData(data: Partial<AssetProfileUpdateData>): Partial<AssetProfileUpdateData> {
-  return { ...data };
-}
+const FUND_REQUIRED_FIELDS = [
+  "name",
+  "fundManager",
+  "fundCategory",
+  "equityPct",
+  "bondPct",
+] as const;
 
-/**
- * Attempt to fetch stock data from Euronext for an ISIN.
- * Returns enrichment data or null if not found.
- */
-export async function fetchFromEuronext(
-  isin: string
-): Promise<Partial<AssetProfileUpdateData> | null> {
-  try {
-    // Euronext public API endpoint for instrument lookup
-    const url = `https://live.euronext.com/en/pd/data/stocks?display=fragment&q=${isin}`;
-
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent": "Divest/1.0 (personal investment tracker)",
-        Accept: "application/json",
-      },
-      signal: AbortSignal.timeout(10000),
-    });
-
-    if (!response.ok) {
-      return null;
-    }
-
-    // The actual API response format varies; this is a stub parser
-    // In production this would parse the actual Euronext response format
-    const text = await response.text();
-
-    // Try to extract basic info from the response
-    // Real implementation would parse the actual API format
-    if (!text || text.length === 0) {
-      return null;
-    }
-
-    return null; // Stub — real parsing would go here
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Attempt to fetch fund data from common Norwegian fund company sites.
- * Returns enrichment data or null if not found.
- */
-export async function fetchFundData(
-  _identifier: string
-): Promise<Partial<AssetProfileUpdateData> | null> {
-  // Stub implementation — real fetchers for DNB, Storebrand, KLP, VFF would go here
-  // Each fetcher would be rate-limited to ≤1 req/sec
-  return null;
-}
-
-/**
- * Determine enrichment status based on how many fields are populated.
- */
-function determineEnrichmentStatus(
-  profileData: Partial<AssetProfileUpdateData>,
+function determineStatus(
+  data: Partial<AssetProfileUpdateData>,
   instrumentType: string
-): string {
-  const stockFields = ["name", "ticker", "exchange", "country", "sector"];
-  const fundFields = ["name", "fundCategory"];
+): "COMPLETE" | "PARTIAL" | "NOT_FOUND" {
+  const required =
+    instrumentType === "STOCK"
+      ? STOCK_REQUIRED_FIELDS
+      : (FUND_REQUIRED_FIELDS as unknown as readonly (keyof AssetProfileUpdateData)[]);
 
-  const relevantFields = instrumentType === "STOCK" ? stockFields : fundFields;
-  const populated = relevantFields.filter(
-    (f) => profileData[f as keyof AssetProfileUpdateData] != null
+  const populated = (required as readonly string[]).filter(
+    (f) => data[f as keyof AssetProfileUpdateData] != null
   );
 
-  if (populated.length === 0) {
-    return "NOT_FOUND";
-  }
-  if (populated.length === relevantFields.length) {
-    return "COMPLETE";
-  }
+  if (populated.length === 0) return "NOT_FOUND";
+  if (populated.length === required.length) return "COMPLETE";
   return "PARTIAL";
-}
-
-/**
- * Run primary enrichment for a profile.
- * Fetches from public sources and updates the profile + linked holdings.
- */
-export async function runPrimaryEnrichment(profileId: string): Promise<void> {
-  // 1. Load the profile
-  const profile = await prisma.assetProfile.findUnique({
-    where: { id: profileId },
-    include: { holdings: { select: { id: true } } },
-  });
-
-  if (!profile) {
-    return;
-  }
-
-  // 2. Try to fetch data based on identifier
-  let fetchedData: Partial<AssetProfileUpdateData> | null = null;
-
-  if (profile.isin && detectISIN(profile.isin)) {
-    fetchedData = await fetchFromEuronext(profile.isin);
-  }
-
-  // If no ISIN-based result, try ticker-based or fund data
-  if (!fetchedData) {
-    if (profile.instrumentType === "FUND") {
-      const identifier = profile.isin ?? profile.ticker ?? "";
-      fetchedData = await fetchFundData(identifier);
-    }
-  }
-
-  // Rate limiting — simple sleep between requests
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  // 3. Determine enrichment status
-  const enrichmentStatus = determineEnrichmentStatus(
-    fetchedData ?? {},
-    profile.instrumentType
-  );
-
-  if (!fetchedData || Object.keys(fetchedData).length === 0) {
-    // Nothing found — update status to NOT_FOUND
-    await prisma.holding.updateMany({
-      where: { assetProfileId: profileId },
-      data: { enrichmentStatus: "NOT_FOUND" },
-    });
-    return;
-  }
-
-  // 4. Merge results
-  const existingFieldSources = parseFieldSources(profile.fieldSources as string);
-
-  const existingData: Partial<AssetProfileUpdateData> = {
-    name: profile.name,
-    ticker: profile.ticker,
-    isin: profile.isin,
-    exchange: profile.exchange,
-    country: profile.country,
-    sector: profile.sector,
-    industry: profile.industry,
-    fundManager: profile.fundManager,
-    fundCategory: profile.fundCategory,
-    equityPct: profile.equityPct ? (profile.equityPct as Prisma.Decimal).toNumber() : null,
-    bondPct: profile.bondPct ? (profile.bondPct as Prisma.Decimal).toNumber() : null,
-    sectorWeightings: parseJson<Record<string, number>>(profile.sectorWeightings as string | null),
-    geographicWeightings: parseJson<Record<string, number>>(profile.geographicWeightings as string | null),
-  };
-
-  const { fields: mergedFields, fieldSources: updatedFieldSources } =
-    mergeProfileFields(existingData, fetchedData, existingFieldSources, "enrichment");
-
-  // 5. Update the profile
-  const updateData: Record<string, unknown> = {
-    fieldSources: JSON.stringify(updatedFieldSources),
-  };
-
-  for (const [key, value] of Object.entries(mergedFields)) {
-    if (key === "sectorWeightings" || key === "geographicWeightings") {
-      updateData[key] = value ? JSON.stringify(value) : null;
-    } else if (key === "equityPct" || key === "bondPct") {
-      updateData[key] = value !== null ? new Prisma.Decimal(value as number) : null;
-    } else {
-      updateData[key] = value;
-    }
-  }
-
-  await prisma.assetProfile.update({
-    where: { id: profileId },
-    data: updateData,
-  });
-
-  // 6. Update all linked holdings' enrichmentStatus
-  await prisma.holding.updateMany({
-    where: { assetProfileId: profileId },
-    data: { enrichmentStatus },
-  });
 }
 
 function parseFieldSources(raw: string | null): FieldSources {
@@ -204,3 +69,244 @@ function parseJson<T>(raw: string | null): T | null {
     return null;
   }
 }
+
+async function trySourceWithRetry(
+  source: DataSource,
+  identifier: ReturnType<typeof normalizeIdentifier>,
+  instrumentType: "STOCK" | "FUND"
+): Promise<SourceResult> {
+  const result = await source.fetch(identifier, instrumentType);
+  if (result.status === "error" && result.retryable) {
+    // Retry once after 1 second
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    return source.fetch(identifier, instrumentType);
+  }
+  return result;
+}
+
+async function persistCandidates(
+  assetProfileId: string,
+  candidates: CandidateData[]
+): Promise<void> {
+  await prisma.enrichmentCandidate.createMany({
+    data: candidates.map((c) => ({
+      assetProfileId,
+      name: c.name,
+      ticker: c.ticker,
+      isin: c.isin,
+      exchange: c.exchange,
+      instrumentType: c.instrumentType,
+      sourceId: c.sourceId,
+      rawData: JSON.stringify(c.rawData),
+      score: c.score,
+    })),
+  });
+}
+
+export async function runPrimaryEnrichment(profileId: string): Promise<void> {
+  // 1. Load the profile and check if enrichment should be skipped
+  const profile = await prisma.assetProfile.findUnique({
+    where: { id: profileId },
+    include: { holdings: { select: { id: true, enrichmentStatus: true } } },
+  });
+
+  if (!profile) return;
+
+  // Skip if all linked holdings are already COMPLETE (unless caller forces refresh)
+  const allComplete = profile.holdings.every(
+    (h) => h.enrichmentStatus === "COMPLETE"
+  );
+  if (allComplete && profile.holdings.length > 0) return;
+
+  // 2. Determine identifier from existing profile data or holdings
+  const holdingIdentifier = await prisma.holding.findFirst({
+    where: { assetProfileId: profileId },
+    select: { instrumentIdentifier: true },
+  });
+  const rawIdentifier =
+    profile.isin ??
+    profile.ticker ??
+    holdingIdentifier?.instrumentIdentifier ??
+    "";
+
+  const identifier = normalizeIdentifier(rawIdentifier);
+  const instrumentType = profile.instrumentType as "STOCK" | "FUND";
+  const cacheKey = `${identifier.normalized.toLowerCase()}:${instrumentType}`;
+
+  // 3. Check cache
+  const cached = await getCached(cacheKey);
+  if (cached) {
+    const existing = extractExistingData(profile);
+    const existingFieldSources = parseFieldSources(profile.fieldSources as string);
+    const { fields, fieldSources } = mergeProfileFields(
+      existing,
+      cached,
+      existingFieldSources,
+      "enrichment"
+    );
+    const status = determineStatus({ ...existing, ...fields }, instrumentType);
+    await applyToDatabase(profileId, fields, fieldSources, status);
+    return;
+  }
+
+  // 4. Try each source in priority order
+  let enrichedData: Partial<AssetProfileUpdateData> | null = null;
+  const applicableSources = SOURCES.filter((s) =>
+    s.supportedTypes.includes(instrumentType)
+  );
+
+  for (const source of applicableSources) {
+    // Each source calls waitForRateLimit internally with its actual URL
+    const result = await trySourceWithRetry(source, identifier, instrumentType);
+
+    if (result.status === "not_found") continue;
+
+    if (result.status === "error") {
+      console.error(
+        `Enrichment source ${source.id} error for profile ${profileId}: ${result.message}`
+      );
+      continue;
+    }
+
+    if (result.status === "multiple") {
+      // Score and try auto-select
+      const scored = result.candidates.map((c) => ({
+        ...c,
+        score: c.score > 0 ? c.score : scoreCandidate(c, identifier),
+      }));
+      const autoSelected = shouldAutoSelect(scored);
+
+      if (autoSelected) {
+        // Treat as found
+        enrichedData = {
+          name: autoSelected.name,
+          ticker: autoSelected.ticker,
+          isin: autoSelected.isin,
+          exchange: autoSelected.exchange,
+          country: null,
+        };
+        await setCached(cacheKey, enrichedData, source.id);
+        break;
+      }
+
+      // Disambiguation required
+      await persistCandidates(profileId, scored);
+      await prisma.holding.updateMany({
+        where: { assetProfileId: profileId },
+        data: { enrichmentStatus: "NEEDS_INPUT" },
+      });
+      return;
+    }
+
+    if (result.status === "found") {
+      enrichedData = result.data;
+      await setCached(cacheKey, enrichedData, source.id);
+      break;
+    }
+  }
+
+  // 5. No source returned data — try web search fallback if configured
+  if (!enrichedData) {
+    const fallbackData = await searchFallback(identifier, instrumentType);
+    if (fallbackData) {
+      enrichedData = fallbackData;
+      await setCached(cacheKey, enrichedData, "search-fallback");
+    } else {
+      await prisma.holding.updateMany({
+        where: { assetProfileId: profileId },
+        data: { enrichmentStatus: "NOT_FOUND" },
+      });
+      return;
+    }
+  }
+
+  // 6. Merge and apply
+  const existing = extractExistingData(profile);
+  const existingFieldSources = parseFieldSources(profile.fieldSources as string);
+  const { fields, fieldSources } = mergeProfileFields(
+    existing,
+    enrichedData,
+    existingFieldSources,
+    "enrichment"
+  );
+
+  const status = determineStatus({ ...existing, ...fields }, instrumentType);
+  await applyToDatabase(profileId, fields, fieldSources, status);
+}
+
+function extractExistingData(profile: {
+  name: string | null;
+  ticker: string | null;
+  isin: string | null;
+  exchange: string | null;
+  country: string | null;
+  sector: string | null;
+  industry: string | null;
+  fundManager: string | null;
+  fundCategory: string | null;
+  equityPct: Prisma.Decimal | null;
+  bondPct: Prisma.Decimal | null;
+  sectorWeightings: unknown;
+  geographicWeightings: unknown;
+}): Partial<AssetProfileUpdateData> {
+  return {
+    name: profile.name,
+    ticker: profile.ticker,
+    isin: profile.isin,
+    exchange: profile.exchange,
+    country: profile.country,
+    sector: profile.sector,
+    industry: profile.industry,
+    fundManager: profile.fundManager,
+    fundCategory: profile.fundCategory,
+    equityPct: profile.equityPct
+      ? (profile.equityPct as Prisma.Decimal).toNumber()
+      : null,
+    bondPct: profile.bondPct
+      ? (profile.bondPct as Prisma.Decimal).toNumber()
+      : null,
+    sectorWeightings: parseJson<Record<string, number>>(
+      profile.sectorWeightings as string | null
+    ),
+    geographicWeightings: parseJson<Record<string, number>>(
+      profile.geographicWeightings as string | null
+    ),
+  };
+}
+
+async function applyToDatabase(
+  profileId: string,
+  fields: Partial<AssetProfileUpdateData>,
+  fieldSources: FieldSources,
+  status: string
+): Promise<void> {
+  const updateData: Record<string, unknown> = {
+    fieldSources: JSON.stringify(fieldSources),
+  };
+
+  for (const [key, value] of Object.entries(fields)) {
+    if (key === "sectorWeightings" || key === "geographicWeightings") {
+      updateData[key] = value ? JSON.stringify(value) : null;
+    } else if (key === "equityPct" || key === "bondPct") {
+      updateData[key] = value !== null ? new Prisma.Decimal(value as number) : null;
+    } else {
+      updateData[key] = value;
+    }
+  }
+
+  await prisma.assetProfile.update({
+    where: { id: profileId },
+    data: updateData,
+  });
+
+  await prisma.holding.updateMany({
+    where: { assetProfileId: profileId },
+    data: { enrichmentStatus: status },
+  });
+}
+
+// Legacy exports preserved for backward compatibility with existing tests
+export { detectISIN } from "./normalizer";
+export type { EnrichmentData } from "./types";
+export { buildEnrichmentData } from "./types";
+export { fetchFromEuronext } from "./sources/euronext-compat";

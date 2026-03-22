@@ -41,15 +41,22 @@ Use the `/release` command to guide through versioning, changelog update, taggin
 *This section will be updated as the project develops.*
 
 ### Active Branch
-`001-holdings-portfolio` — Holdings Registration and Portfolio Profile
+`007-primary-enrichment` — Live Primary Enrichment
 
 ### Current Status
-Feature `001-holdings-portfolio` fully implemented (T001–T060, all 60 tasks). Application is runnable. Ready for PR.
+Feature `007-primary-enrichment` fully implemented (T001–T043, all 43 tasks). Application builds successfully. Ready for PR.
 
-**What's working**: Full holdings CRUD, primary enrichment queue (stub fetchers), AI secondary enrichment pipeline (stub AI provider), spread analysis (stock/interest, sector, geographic), manual profile field editing (user-supplied tracking), profile refresh, Auth.js credentials auth, Prisma schema + migrations, seed data. 88 unit tests + 31 integration tests passing, 0 TypeScript errors. CI updated with real lint/test/typecheck jobs.
+**What's working**: Live Euronext Oslo stock lookup (searchJSON API, ticker parsing, MIC→exchange mapping), Storebrand fund profile PDF extraction (unpdf, sector/geographic weightings), Euronext fund list fallback, web search fallback via Serper.dev (graceful no-op when SERPER_API_KEY unset), disambiguation (NEEDS_INPUT status, EnrichmentCandidate persistence, resolve endpoint, UI card), DB-backed enrichment cache (EnrichmentCache model, configurable TTL), per-host rate limiting, retry-once on transient errors, field source priority (user > enrichment > ai_extraction). 161 unit tests passing, integration tests run in CI. 0 TypeScript errors.
+
+**Known limitation**: Euronext does not provide sector/industry for stocks; stock enrichment always results in PARTIAL status until a secondary enrichment document is uploaded.
 
 ### Known Issues
 None currently.
 
 ## Recent Changes
+- 007-primary-enrichment: Real HTTP enrichment sources (Euronext, Storebrand, Euronext fund list, Serper.dev fallback), disambiguation UI, resolve endpoint, EnrichmentCache + EnrichmentCandidate DB models
 - 006-fix-input-contrast: CSS contrast fix — global form element styles, WCAG AA compliance
+
+## Active Technologies
+- TypeScript 5.6 / Node.js 24 + Next.js 16 (App Router), Prisma 7.5, cheerio 1.0, unpdf 1.4, zod 4 — all existing in `package.json`; no new runtime packages (007-primary-enrichment)
+- PostgreSQL (production) / SQLite-compatible Prisma schema; 2 new models added (007-primary-enrichment)

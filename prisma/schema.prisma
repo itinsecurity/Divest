@@ -30,7 +30,9 @@ model AssetProfile {
   updatedAt            DateTime @updatedAt
 
   holdings             Holding[]
+  candidates           EnrichmentCandidate[]
 }
+
 
 model Holding {
   id                   String   @id @default(cuid())
@@ -49,4 +51,29 @@ model Holding {
   assetProfile         AssetProfile? @relation(fields: [assetProfileId], references: [id])
 
   @@unique([accountName, instrumentIdentifier])
+}
+
+model EnrichmentCache {
+  id        String   @id @default(cuid())
+  cacheKey  String   @unique
+  data      String   // JSON serialized Partial<AssetProfileUpdateData>
+  source    String   // which data source produced this entry
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model EnrichmentCandidate {
+  id             String   @id @default(cuid())
+  assetProfileId String
+  name           String
+  ticker         String?
+  isin           String?
+  exchange       String?
+  instrumentType String   // STOCK | FUND
+  sourceId       String
+  rawData        String   // JSON serialized full source response
+  score          Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  assetProfile   AssetProfile @relation(fields: [assetProfileId], references: [id], onDelete: Cascade)
 }
