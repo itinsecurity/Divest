@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-03-22
+
+### Added
+- Live primary enrichment: Euronext Oslo stock lookup, Storebrand fund PDF extraction, Euronext fund list fallback, Serper.dev web search fallback, DB-backed enrichment cache with configurable TTL, disambiguation UI with resolve endpoint
+
+### Fixed
+- Redirect to home page after GitHub OAuth login; block authenticated users from accessing /login
+
 ## [1.1.2] - 2026-03-21
 
 ### Fixed
@@ -85,7 +93,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Actions release workflow with divest-infra dispatch
 - Dependabot for automated dependency updates
 
-[Unreleased]: https://github.com/itinsecurity/Divest/compare/v1.1.2...HEAD
+[Unreleased]: https://github.com/itinsecurity/Divest/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/itinsecurity/Divest/compare/v1.1.2...v1.2.0
 [1.1.2]: https://github.com/itinsecurity/Divest/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/itinsecurity/Divest/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/itinsecurity/Divest/compare/v1.0.0...v1.1.0
